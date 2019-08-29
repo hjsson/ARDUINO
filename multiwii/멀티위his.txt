@@ -1,0 +1,1710 @@
+*** 설명서 ***
+
+======================================================================================================== =============
+릴리스 관련 설명서
+http://www.multiwii.com/wiki
+
+안정 및 개발 버전은 다음에서 찾을 수 있습니다.
+https://code.google.com/p/multiwii/
+개발 버전의 경우 여러분은 스스로 행운을 빕니다.
+개발자의 진화를 따르지 않으면 개발 버전을 사용하지 마십시오.
+다중 로터가 위험 할 수 있다는 것을 잊지 마십시오.
+
+공식 포럼에서의 토론 및 질문은
+http://www.multiwii.com/forum
+
+코드의 진화를 여기서 따를 수 있습니다 :
+http://code.google.com/p/multiwii/source/list
+
+MultiWii는 제품이 아니며 플러그 앤 플레이 솔루션도 아닙니다.
+이것은 기본적으로 오픈 소스 프로젝트입니다.
+호환되는 보드를 구입하고 최소한의 지식없이 실행 해보십시오.
+
+
+
+main changes 2.3 -> 2.4
+
+
+*** GPS ***
+
+이 버전의 주요 변경 사항은 탐색과 관련하여 EOSBandi가 가져온 코드입니다 (독립 실행 형 MultiWii 2.3navi B7로 긴 시간 지원).
+
+이처럼 큰 공헌 덕분에 MultiWii는 이제 자율적 인 방법으로 여러 WP를 탐색 할 수 있습니다.
+
+모든 정의 옵션에 대한 문서는이 게시물에서 찾을 수 있습니다.
+http://www.multiwii.com/forum/viewtopic.php?viewtopic.php?f=8&t=3989
+
+현재로서는 일부 GUI만이이 코드를 지원하여 임무를 프로그래밍 할 수 있습니다.
+- EOSBandi의 WinGui (http://eosbandi.com/downloads)
+- Ezio의 Ez-GUI (Google Play 앱 https://play.google.com/store/apps/details?id=com.ezio.multiwii)
+- stronnag의 mwp mission planner (https://github.com/stronnag/mwptools)
+
+WinGui에 대한 tmp note :
+현재의 WinGUI에서 작동하려면 버전 번호를 다시 230으로 전환해야합니다.
+그렇지 않으면 오류 메시지가 나타납니다.
+MultiWii.h에서 #define VERSION 230
+새 WinGui 릴리스가 곧 지원 될 것입니다.
+
+Java GUI MultiWiiConf에서는 지원되지 않습니다.
+
+웨이 포인트를 사용하려면 #define USE_MSP_WP를 활성화하는 것을 잊지 마십시오.
+
+GPS가없는 전체 코드는 훨씬 짧습니다. 그러나 GPS 코드의 변경으로 인해 32u4 proc와 더 이상 호환되지 않습니다.
+nav이없는 GPS 코드는 여전히 328p proc에서 작동 할 수 있습니다.
+메가 proc 모든 GPS 기능의 혜택을 필수적입니다.
+
+내부 코드 수정 :
+- 프레임 구문 분석 및 프레임 계산 분리
+- I2C GPS는 더 이상 nav 계산을위한 확장으로 사용되지 않습니다. 이제는 간단한 GPS 장치로 지원되며 모든 계산은 직렬 GPS 장치와 마찬가지로 FC에 남아 있습니다.
+- GPS 직렬 프레임 구문 분석은 이제 일반 직렬 디코딩 코드의 일부입니다.
+- UBLOX GPS 프레임 구문 분석 개선
+
+*** IMU 계산 ***
+
+- 계산 시간에 대한 최적화는 대부분 최종 사용자에게는 보이지 않습니다 : 플로트가 적고 더 많은 16 비트 정수가 가능합니다 / 특정 avr asm 곱셈.
+- 더 나은 정확성 InvSqrt
+- 매기가없는 경우에도 표제가 계산됩니다.
+- 루프 시간의 지터를 최소화하기 위해 굶주린 작업을 줄이거 나 나누었습니다.
+  이러한 개선으로 일정한 루프 시간이 평균보다 약간 높게 설정되고 기본값은 2.8ms로 ??설정됩니다.
+
+
+
+*** ACC ***
+
+- Nunchuk 더 이상 suported입니다
+
+
+
+*** MS561101 바로 ***
+
+- multiwii에서 코드 접근법의 다른 부분에 대해서는 조금 역설적이지만, APM에서 가져온 float 계산은 최소 근사치로 더 짧고 빠릅니다.
+- 작업 분할 덕분에 계산 시간이 다듬어졌습니다.
+- #define ALTITUDE_RESET_ON_ARM 옵션이 추가되었습니다.
+자이로 교정을 수행 할 때 baro는 항상 재설정됩니다.
+
+
+
+*** I2C ***
+
+- 즉각적인 속도 변화 없음 : 모든 센서의 기본값은 400kHz입니다.
+- 유일한 예외는 레거시 WMP가 여전히 100kHz 속도로 사용되는 경우입니다. 정품 WMP를 소유하지 않은 경우이 속도에 대해 더 이상 걱정할 필요가 없습니다.
+- 초기화 단계에서 I2C 오류가 발생할 경우 초기화가 최대 5 회 발생합니다. 나머지 I2C 오류를 방지해야합니다.
+
+
+*** 브러쉬 모터 옵션 ***
+
+- 8/16/32 kHz에서 32u4 proc의 브러시 모터 옵션
+- 1/4/32 kHz에서 328p proc의 브러시 모터 옵션
+http://www.multiwii.com/forum/viewtopic.php?viewtopic.php?f=8&t=3635&p=36883#p36877
+
+
+
+*** RX 수신기 ***
+
+- SUMD RX 타입 소개
+- 다른 수신기 범위와 일치시키기위한 SBUS 개선 / SBUS 신호 스케일링
+- 모든 직렬 유형 RX (Spektrum / SUMD / SBUS)에 대한 코드 인수 분해
+- 비 직렬 RX에 대한 평균 평균 샘플 (AVERAGING_ARRAY_LENGTH). 직렬 RX의 경우 신호가 이미 기본적으로 디지털이므로 평균화 코드가 제거됩니다.
+- 이제 시리얼 RX는 LCD 구성시 글리치없이 사용할 수 있어야합니다.
+- rc 채널에 RSSI 주입
+
+
+
+*** MSP ***
+
+ACC TRIM에 대한 새로운 MSP 메시지 (Java MultiWiiConf에서는 사용되지 않음)
+- 셀 전압에 대한 새로운 MSP 메시지
+- GPS 내비게이션을위한 새로운 MSP 메시지
+- MSP_SET_RAW_RC에 대한 MSP 확인을 제거하고이 메시지에 대해서만
+
+
+
+***소나***
+
+- 얼마 전에 고장난 Devantech SRFxx 코드를 수정하십시오. 그러나 수중 음파 탐지기를 사용하는 대체 자물쇠 용 코드는 여전히 통합되어 있지 않습니다.
+
+
+
+*** 헬기 ***
+
+- 실험적 : 집단 피치에 의존하는 헬리 뇨 precomp
+- 실험적 : 집단 꼬임 잠금 장치에 더 나은 꼬리 잠금 장치
+
+
+***전압***
+
+- 와트 계산
+- 실험 : 개별 셀 전압 모니터링 (알람 부분 실행 취소)
+
+
+
+*** LCD ***
+
+- LCD 지원을 통한 LCD.lcd03 추가 지원
+
+
+
+***** 스케치 컴파일을위한 참조 버전 *****
+
+- MultiWii 스케치 : Arduino IDE 1.6.1의 Windows 버전
+- MultiWiiConf : 값 상자에서 파란색 삼각형을 제거하기 위해 ControlP5의 수정 된 버전으로 1.5.1 처리
+
+main changes 2.2 -> 2.3
+
+
+
+*** 제어 모드 ***
+
+- 메인 PITCH / ROLL / YAW PID 수정 (r1474)
+  - 스틱 스케일링은 더 이상 PID 계수의 영향을받지 않습니다.
+  - yaw rate (GUI의 PID 오른쪽)가 스틱 스케일링으로 작동합니다.
+  - 기본 요율이 증가합니다 (요 율이 0 인 경우)
+  - yaw PID 원리는 이제 PITCH & ROLL PID와 다릅니다 :
+    - yaw ITerm windup가 매우 높기 때문에 수동 교란 후 '탄성'방향 복귀가 가능합니다.
+    - yaw ITerm은 또한 와인드업 독립 한계로 제한됩니다
+    - yaw PTerm은 요우 점프 효과에 대응하기 위해 제한됩니다.
+      yaw DTerm을 사용하여이 제한을 늘립니다 (r1573).
+    - yaw 스틱이 중앙에 있지 않으면 ITerm이 취소됩니다.
+
+- 스로틀 각도 보정 (r1374)
+
+- Advanced Headfree 모드가 추가되었습니다 (자세한 내용은 config.h를 참조하십시오) (r1374)
+
+- DYNBALANCE 옵션, GUI를 통해 개별 모터를 제어하여 개별 진동을 테스트 할 수 있습니다.
+  http://www.multiwii.com/forum/viewtopic.php?f=7&t=3294
+
+- 더 나은 자이로 및 보정 정확도 (r1546)
+  http://www.multiwii.com/forum/viewtopic.php?f=7&t=3880
+
+- 완장 모드가 켜짐 (r1550)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=3910
+  ! 바이로 모드는 멀티가 거의 안정적 일 때만 활성화되어야합니다!
+- 단 하나의 바이로 모드 : 스로틀 데드 밴드 주변의 바리오 (r1554)
+
+- 암을 켤 때 magHold가 재설정됩니다 (r1553).
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=3910
+
+- ONLYARMWHENFLAT 옵션 (r1587)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=4077&hilit=coming&start=40#p41755
+
+
+
+*** 수신기 및 UART ***
+
+- RCSERIAL은 이제 깊이 통합되었습니다. MSP_SET_RAW_RC가 오면 레거시 RX 데이터를 무시합니다. (r1420)
+  결과적으로 축성은 더 이상 선택 사항이 아닙니다.
+
+- Spektrum & SBUS (r1545)에 대한 RC 평균 없음
+
+- SBUS 센터 정의 (r1568)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=3957
+
+- FAILSAFE_DETECT_TRESHOLD 설정 가능
+
+
+
+*** GPS ***
+
+- i2c-gps-nav 보드 (1424)에서 수중 음파 탐지기 사용 가능
+
+- 탐색 코드는 2.3 이후에 따라옵니다.
+
+
+
+*** GUI ***
+
+- Gui와 Servosettings. (r1441 & r1450)
+  서보가 포함 된 모든 모델.
+
+- GUI globalsettings (이전에 config.h에서만 사용되었던 일부 설정)
+
+- /dev/cu.* 장치를 표시하지 않고 해당 /dev/tty.* (r1442) 장치 만 표시합니다.
+
+- 구성 가능한 설정으로서의 GUI 전송 속도
+
+
+
+*** LCD ***
+
+- lcd.telemtry : GPS 데이터에서 최대 지상 속도 표시 (r1398)
+
+- lcd.telemetry : aux2 구성을 별도로 억제 할 수 있습니다 (r1456).
+
+- 새로운 디스플레이 지원 digole.com의 1.3 "i2c OLED (r1413)
+
+- config.menu : 중단 할 때 모든 값을 마지막 저장된 상태로 되돌립니다.
+
+- LCD를 통한 중간 지점 트림 동안의 서보로부터의 시각적 피드백
+
+*** IMU와 바로 ~ ***
+
+- 모든 자이로 (r1428)에 대해 올바른 GYRO_SCALE
+
+- 보드를 흔들면서 더 이상 작은 각도가 없습니다 (r1579).
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=4112
+
+- 지상 임시 보상 (r1570)을 기반으로 Alt Alt
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=4059
+
+- FIWEDWING (r1590)으로 재설정하지 않았습니다.
+  http://www.multiwii.com/forum/viewtopic.php?f=7&t=2456&start=330#p42355
+
+- 6DOF LSM330 센서 (r1571) 추가
+
+- ACC BMA280 센서 (r1600) 추가
+
+
+
+*** 서보 관리 ***
+
+경고:
+서보와 함께 coptertypes위한 핀이 변경되었습니다.
+서보를 모터 핀에 연결하면 서보를 빠르게 파괴 할 수 있습니다.
+v2.2 또는 이전 버전의 모든 연결 다이어그램은 하드웨어 PWM을 사용하는 v2.3에서 더 이상 유효하지 않습니다.
+
+http://www.multiwii.com/wiki/index.php?title=Config.h#Servos_configuration
+
+- MEGA 보드에 서보 모터에 8 개의 하드웨어 PWM을 추가하십시오. 서보 출력은 44,45,46,11,12,6,7,8 (r1384)
+
+- 메가 하드웨어 PWM 서보에서 20 ~ 400Hz의 서보 리프레쉬 속도를 허용합니다. (r1386)
+
+- 트라이 서보가 HW PWM이 장착 된 메가 보드의 SERVO4 (pin11)로 이동되었습니다. (r1392)
+
+- a32u4 (nanoWii, MicroWii 등) 4 개의 서보 용 HW PWM; 경고 다른 핀 !!
+  (많은 정보와 론코의 도움으로)
+  (r1464 & r1470)
+
+- 서보 설정을 구성하는 일반적인 방법을 추가하십시오 : conf struct + MSP 읽기 / 설정 메시지 (r1383)
+
+- 일반 서보 핸들러 추가 (r1421 & r1429)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=3498
+
+- config.h (r1432)에서 일부 서보 스터핑을 허용
+
+- Gui와 Servosettings. (r1441)
+
+- HW PWM에서 사용할 수있는 짐벌 서보 스트레처를 ??추가하십시오. (r1384)
+  서보 수정없이 180도 서보 이동이 가능합니다.
+- 짐벌에 대한 참고 사항 : 중립 및 종점에 대한 설정은 config.h에서 더 이상 없지만 GUI에서만 가능합니다.
+
+- 진동에 민감한 센서의 비무장 교정 중에 서보를 업데이트하지 마십시오 (r1408)
+
+*** 내부 개선 사항 ***
+
+- cpp / h 코드 구조로 마이그레이션 (r1515 & r1516)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=3773
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=2931
+
+- 거대한 플래시 크기 최적화 (약 1k)
+  정밀한 구조체 정의와 MSP (r1369)를 통한 직렬화 덕분에
+
+- configerm hassle을 줄이고 정확도를 높이기 위해 powermeter 계산 시간을 다시 계산합니다 (r1375)
+
+- MWii 메인 루프 사이클 당 최대 하나의 아날로그 채널 읽기 (r1375)
+
+- RX_RSSI의 평활화 (r1379)
+
+- 더 빨라진 아날로그 판독 값을 기본값으로 해제하여 정확도를 높이십시오 (r1375).
+
+- detangle vbat & buzzer dependancy (r1375)
+
+- 최적화 : * 또는 / 숫자 대신 작은 근사값 비트 시프트
+  TPA, 요율, dynP, dynD 및 엑스포 연석 (r1376)
+
+-이 경우 플래시 컨텐츠 변경 및 구성 매개 변수 재로드 확인이 추가되었습니다. (r1389)
+
+- 직렬 (코어 UART 관리) 및 프로토콜 (r1548)으로 분할
+
+- 루프가 전역 적으로 빠릅니다.
+
+
+
+*** 부가 기능 ***
+
+- mwc 스케치의 기본값을 억제하고 대신 파일에서 gui를 통해로드하는 옵션 (r1365)
+
+- OVERRIDE_PSENSORPIN 옵션 (r1375) 추가
+
+- Eclipse 환경에서 Multiwii를 사용하기위한 매뉴얼
+  http://www.multiwii.com/wiki/index.php?title=Developing_in_Eclipse
+
+- MSP_ANALOG에 암페어 추가 (r1542)
+
+- MY_PRIVATE_DEFAULTS (r1559)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=3987
+
+- 포트 당 및주기 당 최대 하나의 MSP
+  MSP를 요청하는 동안 지연을 완화해야합니다. 특히 마이크로 USB 포트
+
+2.1 -> 2.2
+
+
+
+*** 제어 모드 ***
+
+- 호리온 모드 도입.
+이제 3 가지 모드가 있습니다.
+
+ACRO 모드.
+  ANGLE & HORIZON BOX가 작동하지 않을 때의 기본 설정입니다.
+  헬리콥터는 스틱을 기울이는 방향으로 계속 회전합니다.
+  막대기를 놓을 때 각도를 유지하고 레벨로 돌아 가지 않습니다.
+
+ANGLE 모드
+  스틱의 위치는 헬리콥터가 유지하려고하는 각도를 나타냅니다. 스틱 꺼짐 = 수준.
+  어떤 방향 으로든 가득 차면 약 50도 기울어집니다. 그것은 중간에 비례합니다.
+  스틱으로 설정된 각도를 유지합니다. 지팡이를 풀어주고 레벨로 돌아갑니다.
+
+호라이즌 모드 <- 새로운
+  이 둘의 비례 혼합입니다. 스틱 꺼짐 = 수준. 전체 처짐 = ACRO.
+  그 사이에 LEVEL 모드에서 ACRO로 점진적으로 믹스됩니다.
+  스틱을 떼면 ANGLE 모드의 안전성으로 일부 ACRO를 수행 할 수있는 좋은 조합입니다.
+  멀티가 덜 제한적으로 보이는 것처럼 더 자연스러운 비행을 가능하게합니다.
+
+
+- 안전 장치 코드가 더 엄격합니다. (MIS 덕분에)
+  활성화 된 경우 모든 주 채널을 고려하므로 [1000-2000] 범위 내에서 엄격하게 유지하는 것이 중요합니다.
+  예를 들어 995의 스로틀은 안전 장치를 활성화합니다
+  failsafe는 선택 사항이며 #define FAILSAFE를 통해 활성화 할 수 있습니다.
+
+- PatrikE에 의해 소개 된 Acrotrainer 모드
+  비례 수평선 모드의 일종
+  자세한 정보는 http://www.multiwii.com/forum/viewtopic.php?f=16&t=1944를 참조하십시오.
+
+- SERVO_TILT_MIX
+  Bledi와 Gary가 소개 한
+  http://youtu.be/zKGr6iR54vM
+  지원하기 위해 수정 된 쟯 ptionally 쟵 p 2 AUX 채널 쟳 uperposition 쟴 o 짐벌 제어
+
+- CAM STAB : (Gary에게 감사하고 제안하거나 Arne을 제안 함)
+  사용 된 Cam Stab 제어 채널을 정의하는 기능
+  능력 끄기
+  캠 스탭이 활성화 된 틸트 / 롤에 영향을 미치는 AUX3 + 4 수정.
+
+
+
+*** 부가 기능 ***
+
+- 파일럿 라이트 통합 (mr.rc-cam, jevermeister, doughboy 덕분에)
+  #define을 통해 PILOTLAMP
+  http://code.google.com/p/multiwii/wiki/Documentation_Pilotlamp
+
+- shikra 덕분에 LEDRING 패턴이 세련되었습니다.
+  안내 : http://code.google.com/p/multiwii/source/browse/trunk/LEDRing/README.txt
+
+- 햄버거에 의해 소개 된 variometer
+  헬리콥터 / 비행기 추락시 오디오 피드백을 얻을 수있다.
+  #define VARIOMETER를 통해
+
+
+
+*** 수신기 및 UART ***
+
+- MIS 덕분에 메가 보드에서 스로틀 PIN을 PPM PIN으로 사용하는 옵션
+  이렇게하면 UART 1을 다른 용도로 사용할 수 있습니다.
+  #define PPM_ON_THROTTLE을 (를) 통해
+
+- MEGA 보드의 모든 UART 포트는 다른 보드 구성으로 동시에 사용할 수 있습니다.
+  즉, 최대 4 개의 GUI 또는 OSD 또는 MSP를 사용하는 모든 것을 동시에 연결할 수 있습니다.
+
+- Promote 보드의 두 번째 UART 포트는 다른 보드 구성으로 동시에 사용할 수 있습니다.
+
+- spektrum (Danal 덕분에)
+  - 다중 채널에서 8 개까지만 사용할 수있는 경우에도 최대 12 개 채널의 spektrum 위성
+  - spektrum 위성 BIND 버튼, 주 수신기없이 위성 연결하기
+
+
+
+*** PIN 매핑 ***
+
+- config.h의 일부 PIN 정의를 무시할 수있는 가능성 (Hamburger 덕분에)
+
+
+
+*** GPS ***
+
+- UBLOX GPS : 보드 구성이 자동으로 감지되며 UBLOX 바이너리 프로토콜이 자동으로 설정됩니다 (MIS & EOSBandi 덕분에).
+
+- 이제 EOSBandi 덕분에 MKT GPS를 바이너리 모드로 파싱 할 수 있습니다.
+  DIYDrones MTK 펌웨어 v1.6 및 v1.9 용으로 제작되었습니다.
+
+- I2C GPS :
+  올바른 방향으로 홈 (반대 방향으로 변경)
+  집까지의 거리가 654m에 이르면 여전히 문제가 남아 있습니다. 오버 플로우가 발생합니다.
+  이 문제를 해결하려면 I2C 코드가 필요합니다.
+
+- EOSBandi가 Arducopter 코드에서 포워드 예측 필터를 포팅했습니다.
+  선택적이며 기본적으로 활성화 됨 : #define GPS_LEAD_FILTER
+
+- MSP_SET_WP의 첫 번째 구현
+  Ezio 앱 (EZ-GUI)의 도움으로 이제 스마트 폰으로 멀티를 제어 할 수 있습니다.
+    지도에서 새로운 위치 설정 / 나를 따르거나 제목을 따르십시오.
+  Multiwii EZ-GUI 특정 주제 참조 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=2034
+  이 기능에 대한 동영상 :
+  http://www.youtube.com/watch?v=qpoPanmVa9Y
+  http://www.youtube.com/watch?v=hPj6WZex8j0
+  http://www.youtube.com/watch?v=nPICiiaDTnc
+
+- PatrikE에 의해 소개 된 AP_MODE
+  GPS POS HOLD 모드에서 사용, 지정된 스틱 범위 밖에서 POS HOLD 위치가 갱신 됨
+
+
+*** 다중 모델 ***
+
+- HELICOPTER 및 PLANE 모델이 PatrickE 및 Hamburger 덕분에 세련되었습니다.
+  여러 헬리콥터 유형 HELI_120_CCPM, HELI_90_DEG
+  비행기 용 서보 구성, FLAP, FLAPPERON
+
+- HEXH6 멀티탭 타입 추가 (shikra 덕분에)
+
+- Bi-Copter 피치 방향 설정
+
+- USE_THROTTLESERVO (항공기의 경우), COLLECTIVE_RANGE가 변경됨 (두 번째 값이 더 이상 오프셋되지 않음)
+
+
+
+*** GUI 및 OSD & LCD ***
+
+- RECONNECT 버튼이 PatrickE에 의해 추가되었습니다.
+  마지막 COM 및 직렬 속도를 나타내는 파일이 생성됩니다.
+  이 파일에서 직렬 속도를 편집하여 GUI의 UART 속도를 변경할 수 있습니다.
+
+- 그래픽 향상 기능이 추가 된 새로운 MultiWiiConf GUI v2.2 (Magnetron 및 doughboy 덕분에)
+  가상 지평선과 같은 멋진 것들
+
+- 옵션으로 3 개의 독립적 인 구성, EEPROM에 스틱 선택 가능한 설정 (MIS 덕택으로)
+  #define MULTIPLE_CONFIGURATION_PROFILES를 통해 활성화 할 수 있습니다.
+
+- GUI에 RESET 버튼이 추가되었습니다.
+  EEPROM에 문제가 있거나 기본값을 복원하려는 경우
+
+
+
+*** LCD ***
+
+- 메가 보드에서는 진정한 UART를 지원하는 LCD 용 LCD 포트를 정의 할 수 있습니다.
+
+- 더 많은 매개 변수가 LCD conf를 통해 조정 가능합니다. config.h에있는 모든 매개 변수는 작은 (*) 외에, Hamburger에게 감사합니다.
+  이러한 매개 변수는 나중에 다른 단계에서 GUI에서 이동하게됩니다. 일단 좋은 방법을 찾으면됩니다.
+  예 : failsave.throttle, vbat 튜너 블 매개 변수, powermeter 튜너 블 매개 변수
+
+- 많은 원격 측정 및 LCD 구성 향상 (햄버거 덕분에)
+  텔레 메 트리 페이지 3 : 긴 상자 이름 사용
+  텔레 메 트리 페이지 2 : 막대 그래프 옆의 센서 데이터에 대한 숫자 값 표시
+  시작시 원격 측정 정보를 실행하는 데 필요한 사용자 개입 없음
+  개별 보드 이름 문자열을 설정합니다 (현재는 표시에 사용되며 아직 GUI를 표시하지 않습니다).
+
+- LCDconfig 메뉴 : THROTTLE = High이면 증가분은 정상의 10 배입니다.
+
+- 보정 및 LCD 구성 중에 서보가 중립 위치로 이동합니다.
+
+
+
+*** OSD ***
+
+- OSD 사용을 위해 RSSI PIN이 추가되었습니다 (Kataventos 덕분에).
+  RSSI 출력은 OSD에 대한 MSP 메시지를 통해 검색 될 수 있습니다
+
+- OSD 활성화를 위해 OSD BOX가 추가되었습니다 (Itai 덕분에).
+
+- MultiWii와 완벽하게 호환되는 오픈 소스 코드 OSD로 제작 된 거대한 작업 (Kataventos의 팀 리더 덕분에)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=2918
+  http://code.google.com/p/rush-osd-development/
+
+*** IMU와 바로 ~ ***
+
+- 자이로 교정은 MWC가 움직이지 않을 때까지 유지 될 수 있습니다.
+  MIS에 의해 소개되었고, 다음을 통해 특정 선택 정의를 만들었습니다 :? define GYROCALIBRATIONFAILSAFE
+
+- EOSBandi 덕분에 매그 게인 보정이 개선되었습니다.
+  Fabio FreeIMU 코드를 기반으로합니다. 파비오를 잊지 않을거야 ...
+
+- 9DOF의 경우 오일러 각 계산이 더 좋습니다 (더 나은 표제).
+  9DOF 센서로 GUI 표현에서 더 이상 짐벌 잠금 없음
+
+- 보드 특정 기본값을 무시하도록 센서 방향 지정
+  config.h의 선택 사항
+
+- 기본 ACC LPF 인수가 16 (2 ^ 4)에서 감소하고 ALT 보존을 위해 ACC LPF와 공유됩니다.
+
+- 자이로 / acc 보완 필터 값이 400에서 600으로 증가 함
+
+- 자이로 / 매거진 보완 필터가 200 대신 250으로 설정되었습니다.
+
+- 자이로 스케일 계수가 2380에서 2279로 변경되었습니다.
+
+- 가속도계는 이전 1.4G / 0.6G 설정 대신 1.15G 이하 및 0.85G 이상에서 사용됩니다.
+
+- 옵션 : 보드 방향을 변경하지 않고 X / P 구성을 변경하려면 SENSORS_TILT_45DEG_LEFT / RIGHT
+
+- Mahowik 코드 덕분에 ALT HOLD가 크게 향상되었습니다.
+  가속도계 z 축을 포함하는 개선 된 PID 알고리즘
+  그것의 진짜 큰 개선을위한 multiwii
+  http://www.youtube.com/watch?v=T3htaJ53Z7E
+
+- Sebbi 덕분에 바로 교정 및 계산이 향상되었습니다.
+  baro는 전원이 켜지면 고도 0을 나타냅니다. 이것은 참조 고도입니다.
+
+- 기압 고도 계산에 온도 변화, 빠른 업데이트 속도 포함
+
+- 새로운 FC 보드 : SIRIUSGPS, SIRIUS_AIR, SIRIUS_AIR_GPS, MICROWII, GY_521, MultiWiiMega, DESQUARED6DOFV2GO, DESQUARED6DOFV4, LADYBIRD, MEGAWAP_V2_STD, MEGAWAP_V2_ADV, HK_MultiWii_SE_V2, HK_MultiWii_328P, RCNet_FC, FLYDU_ULTRA
+
+
+
+*** 내부 개선 사항 ***
+
+- PID copputation의 최적화 속도를 위해 일부 기본 PID가 변경되었습니다.
+  기본 PID는 이전 PID와 똑같이 작동해야합니다.
+  이전 PID 설정을 복원하려면 비율 만 필요합니다.
+
+- 핀 44,45,46,11,12의 Mega 보드로 하드웨어 PWM 서보 5 대 사용 가능 (MIS 덕분)
+
+- 체크섬으로 보안 된 EEPROM 설정 (MIS 덕분에)
+
+- eeprom에 대한 선택적 영구 로깅
+  설정 : LOG_PERMANENT
+
+- 조정되지 않은 LED 깜박임 주파수 변경 또는 기울기가> 25에서 50ms로 10ms
+
+Sebbi의 아이디어 덕분에 작업 스케줄러 코드 재 작업
+  이제 더 나은 계산 시간 재분할을했습니다.
+
+- 선택적 fixate cycle time (CPU 시간을 버려서)
+
+- config.h에서 모터 / 서보 믹싱을 무시할 수 있습니다. Output.ino를 편집 할 필요가 없습니다.
+  실험적
+
+- v2.1보다 더 빠른 사이클 시간
+
+- 코드에서 숨겨진 많은 최적화
+
+
+
+2.0 -> 2.1
+
+
+이 버전으로 업그레이드하기 전에 모든 사람들이 알아야 할 사항.
+
+  WMP 및 NUNCHUCK는 더 이상 자동으로 인식되지 않습니다.
+  config.h에서 명시 적으로 (또는 WMP 만) 선언해야합니다.
+
+  풀업은 기본적으로 정의되어 있지 않습니다.
+    (당신이 WMP only conf를 사용한다면 그것을 활성화시키는 것에 대해 생각해보십시오)
+  LCD는 기본적으로 활성화되어 있지 않습니다.
+
+  Failsafe는 기본적으로 활성화되지 않습니다.
+
+  VBAT 모니터링은 기본적으로 활성화되지 않습니다.
+
+  더 이상 .pde 파일이 없습니다.
+  스케치를 컴파일하고 (그리고 Multiwii.ino를 열려면) Arduino 1.0 이상을 사용해야합니다.
+
+  GUI가 설정에서 작동하지 않으면,
+    디스플레이 보드의 하드웨어 가속을 비활성화하십시오.
+    또는 WinGUI와 같은 대체 GUI를 사용하십시오.
+
+  MultiWii는 제품이 아니며 플러그 앤 플레이 솔루션도 아닙니다.
+  호환되는 보드를 구입하고 최소한의 지식없이 실행 해보십시오.
+
+
+수신부
+  OpenLRS 멀티 보드 지원 완료
+    이 보드는 OpenLRS 수신기를 포함하는 보드로 atmel
+    다중 wii 코드를 실행하는데도 사용됩니다.
+    자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=1438
+
+Multiwii 직렬 프로토콜
+  FC와 통신하는 새로운 프로토콜입니다.
+  그것은 나에 의해 소개되었고 Tommie에 의해 조정되었다.
+  거대한 변화이지만 FC와 통신 할 수있는 일반적인 방법을 보장해야합니다.
+  이는 버전 발전에 덜 의존적입니다.
+  자세한 정보는 http://www.multiwii.com/forum/viewtopic.php?f=8&t=1516에서 확인할 수 있습니다.
+  
+  이제 우리가 GUI / OSD / conf 툴을 추가하고 싶다면 다중 모드 코드가 없습니다.
+
+  호환되는 GUI :
+   오픈 소스 코드, 새로운 직렬 프로토콜과 호환 :
+    EOSBandi의 WinGUI는 원작과 완전히 동일하며,
+     더 나은 모습으로
+      자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=1229
+    kos의 mwGui
+      자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=1791
+    시리얼 블루투스를 통한 Android 앱 :
+     - 멀티 wii에 블루투스 모듈 추가하기
+       more info here : http://www.multiwii.com/forum/viewtopic.php?f=6&t=133
+     호환 가능한 앱 :
+      https://play.google.com/store/apps/details?id=net.xrotor.andmultiwiiconf
+      https://play.google.com/store/apps/details?id=net.loide.games.bicopter
+      https://play.google.com/store/apps/details?id=com.naze32.configurator
+
+  호환 가능한 OSD :
+    새로운 직렬 프로토콜과 호환되는 오픈 소스 코드
+    러쉬 두 이노 :
+      자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=922
+    mobiDrone :
+      자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=1498
+
+
+LCD 구성
+  OLED 디스플레이
+    howardhb와 Hamburger의 도움 덕분에
+    자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=7&t=1350
+
+  VT100 터미널 유형 추가
+    햄버거 덕분에
+    자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=7&t=1096
+
+  2 줄 이상에서 구성 할 수 있도록 여러 줄 옵션이 추가되었습니다.
+    OLED 또는 VT100과 같은 디스플레이에 유용합니다.
+
+  이제 LCD와 관련하여 많은 가능성이 있습니다.
+    SERIAL3W : Sparkfun의 원본 2x16 라인
+    TEXTSTAR : 고양이 수염 LCD_TEXTSTAR 모듈 CW-LCD-02
+    VT100 : vt100 호환 터미널
+    ETPP : Eagle Tree 전원 패널 LCD
+    LCD03 : i2c LCD
+    OLED_I2C_128x64
+
+새로운 proc : ATmega32U4
+  론코의 작품 덕분입니다.
+  이 proc는 Arduino pro 마이크로 보드 또는 Teensy 2.0에서 찾을 수 있습니다.
+  Pro Micro는 Pro Mini와 크기면에서 유사하지만 ATmega32U4가 장착되어 있습니다.
+  32U4 내부의 USB 트랜시버를 통해 USB 연결을 추가 할 수 있습니다.
+  ronco는 nanowii라는 맞춤형 보드도 디자인했습니다.
+  현재 구입할 수있는 가장 작은 6DOF Multiwii 보드 중 하나입니다.
+  자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=6&t=1337
+
+서보 기구:
+  높은 재생 빈도 :
+    일부 서보 (대부분 디지털)는 50Hz보다 높은 주파수에서 작동 할 수 있습니다.
+    높은 재생 빈도를 사용하면 더 빠른 응답을 얻을 수 있습니다.
+    ronco는이 주파수를 구성 가능한 코드로 변경했습니다.
+    자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=1644
+  하드웨어 PWM 출력 :
+    MEGA 보드에서는 이제 짐벌 서보를
+    11 비트 PWM 서보 분해능. 론코 덕분에.
+    하드웨어 PWM 출력은 지터가없는 응답을 보장합니다.
+
+LED 자동 점멸 장치
+  Tommie에서 플래시 LED 시퀀스를 설정하는 방법
+  자세한 정보는 다음을 참조하십시오. http://www.multiwii.com/forum/viewtopic.php?f=8&t=1505
+
+스로틀 엑스포
+  GUI에 스로틀 엑스포를 구성하는 또 다른 곡선이 있습니다.
+  호버 포인트 주변의 스로틀 스틱 응답을 부드럽게하는 방법입니다.
+  설정을 돕기 위해 그래프에 작은 커서가 있습니다.
+  여기서는 현재 스로틀 입력입니다.
+
+ACC LEVEL 개선
+  새로운 선택 덕분에 LEVE 모드가 2.0으로 향상되었습니다.
+  다른 상보적인 필터 계수들 및 부동 소수점 저역 통과 필터
+
+헤드 혼 체크 박스 :
+  체크 박스를 통해 비행하는 동안 headfree 방향을 재설정 할 수 있습니다.
+  토미 덕택입니다.
+
+감지기:
+  MPU6050 : 자이로 LPF를 사용하지 못하게하는 버그가있었습니다. 지금 correted.
+  SONAR : I2C 소나 SRF0x 코드가 추가되었지만 현재 사용되지 않습니다.
+  HMC5883 축 보정 계수가 추가되었습니다.
+  NUNCHUK는 GUI에서 ACC와 융합 됨
+  config.h 파일에 많은 새 보드가 추가되었습니다.
+
+내부 코드 :
+  - 직렬 부품은 이제 RAM을 덜 사용합니다 (Tommie 첫 번째 모듈 덕분에).
+    RX / TX 버퍼는 이전보다 작습니다.
+  - EEPROM 매개 변수는 구조체에 저장되며
+    단일 단계에서 EEPROM.
+  - EOSBandi가 더 정확한 방향을 갖기 위해 MAG 적위가 추가되었습니다.
+    일부 국가에서는이 변수를 올바르게 설정해야합니다.
+     그렇지 않으면 GPS를 사용할 수 없습니다.
+  - 플래그 var는 전역 부울 유형 변수에 대해 도입되었습니다.
+  - 햄버거 (Hamburger)는 확인을 위해 "헬리콥터 예시"를 소개했습니다.
+    컴파일이 괜찮 으면. (사소한 버그를 제거하는 방법이어야 함)
+  - 코드 스타일 (들여 쓰기, 변수 명명 규칙 등) 시작됨
+  - GUI를 컴파일하려면 새로운 ControlP5 라이브러리가 필요합니다.
+  - 간격 변수 activate []은 이제 16 비트 길이입니다.
+  - 새로운 config.h 구조체
+
+GUI :
+  - Danal에게 감사합니다. PIN 번호와 프로펠러 방향이 있습니다.
+  그래프 표현으로 그려진다.
+  - kos 덕분에 이제 매개 변수를로드하고 파일에 저장할 수 있습니다.
+  - 모든 매개 변수를 기본값으로 설정하는 재설정 버튼이 있습니다.
+  - 모든 주 (체크 박스 항목)에 GUI 시각적 피드백이 있습니다.
+
+GPS 코드 :
+  EOSBandi의 작업 덕분에 이제는 작동하는 GPS 코드가 생겼습니다!
+  탐색 루틴은 Jason Short의 작품을 기반으로합니다.
+  Arducopter 팀 (다른 훌륭한 오픈 소스 프로젝트).
+  EOSBandi는 그것을 다중 세계에 적용했습니다.
+  기본적으로 GPS에는 2 가지 주요 옵션이 있습니다 : 직렬 옵션과 I2C 옵션.
+
+    - 여분의 직렬 포트와 AtMega1280 또는 2560 마이크로 컨트롤러가있는 경우
+    기반 FC를 사용하면 해당 포트에 GPS를 연결하고 직렬 GPS를 사용할 수 있습니다
+    코드의 코드.
+    Patrick은 GUI 메시지 구문 분석 사이에서 자동으로 전환하는 방법을 소개했습니다.
+    또는 동일한 직렬 포트에서 NMEA 메시지 구문 분석
+    (GUI와 GPS에 대해 동일한 포트를 사용할 수 있으므로 promini에 유용합니다
+    독점 모드에서)
+    
+    - 보조 AtMega328 프로세서가 포함 된 I2C_GPS 보드를 사용할 수 있습니다
+    직렬 GPS로 GPS 파싱 및 탐색 계산을 실행합니다.
+    이 보드는 I2C 버스를 통해 FC와 통신합니다.
+
+  자세한 정보는 다음을 참조하십시오. http://code.google.com/p/i2c-gps-nav/downloads/list
+  여기이 거대한 게시물에서 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=649
+
+  특정 GPS_FROM_OSD 옵션도 있습니다.
+    그것은 GPS 데이터로 Multiwii를 먹이기 위해 OSD의 GPS 장치를 사용하는 방법입니다
+    MIS OSD는이 기능을 사용합니다.
+
+ESC 보정
+  실험적
+  그것은 exaclty가있는 모든 ESC를 교정 할 수있는 특별한 #define입니다.
+   같은 신호.
+  자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=13&t=1517
+
+텔레 메 트리
+  새로운 텔레 메 트리 수동 스테핑 모드
+
+무장 옵션
+  팔 / 무장 해제를위한 구성 가능한 TX 스틱 콤보
+  이 방법을 사용하면 멀티를 통해 암을 해제하거나 해제 할 수 있습니다.
+    - 이전과 같이 하나의 AUX 스위치
+    - YAW 스틱 및 / 또는 ROLL 스틱
+
+비행기 모드
+  실험적인, 더 많은 정보는 여기에 :
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=364
+  https://code.google.com/p/multiwii/wiki/MWiiAirplane
+
+헬리콥터 모드
+  실험적
+  more info here : http://www.multiwii.com/forum/viewtopic.php?f=8&t=1562
+
+이중 및 단일 헬리콥터
+  실험적
+  more info here : http://www.multiwii.com/forum/viewtopic.php?f=8&t=1882
+
+VTAIL 모드
+  모터 회전이 변경되었습니다.
+  앞 좌측 & 뒤 우측 : CCW, 앞 우측 & 뒤 좌 : CW, YAW_DIRECTION = 1
+An attempt to improve the documentation via wiki
+  wiki from googlecode:
+   https://code.google.com/p/multiwii/w/list
+  wiki from multiwii.com
+   http://www.multiwii.com/wiki/index.php?title=Main_Page
+  We all know the overall documentation is still to improve :)
+
+위키를 통해 문서를 개선하려는 시도
+  wiki from googlecode :
+   https://code.google.com/p/multiwii/w/list
+  multiwii.com에서 위키
+   http://www.multiwii.com/wiki/index.php?title=Main_Page
+  우리 모두는 전반적인 문서가 여전히 향상된다는 것을 알고 있습니다. :)
+
+1.9 -> 2.0
+
+***you 
+
+*** .ino 파일을 열려면 최소한 Arduino 1.0 IDE가 필요합니다. ***
+
+보드 및 센서 :
+새로운 센서 :
+  ACC MMA7544 가속도계.
+  MAG MAG3110
+
+새 보드 :
+  CRIUS_SE
+  CRIUS_LIGHT
+  몽구스
+  CHERRY6DOFv1_0
+  DROTEK_6DOF_MPU
+
+새로운 프로세서
+  볼 수있는 ATMega 32U4를 기반으로 한 론코 코딩
+  328에서 2560 사이의 중간 프로 시저로서
+  거의 동일한 크기의 328보다 많은 개선 사항.
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=1145
+
+
+
+STM32 포트
+  dongs에서 port multiwii에 이르기까지 32 비트 프로세서에 이니셔티브입니다.
+  이 코드는 저렴한 FC 보드를 재사용하고
+  펌웨어를 여러 개 사용합니다. (FreeFlight FC와 같은 보드는
+  goodluckbuy 사이트에서 찾거나 AfroFlight32와 같은 동사가 디자인 한 특정 보드)
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=1193
+  http://code.google.com/p/afrodevices/
+
+안정 모드
+  BMA180 및 BMA020 설정이 이제 8G로 설정됩니다.
+  설정은 이전에 2G였습니다. 우리는 진동으로 인해 ACC 포화가 발생할 수 있음을 확인했습니다.
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=849
+  잘못된 ACC 측정을 유발하고 잘못된 PITCH / ROLL 각도 감산을 유발합니다.
+  이 문제는 아마도 뱇 evel drift 문제의 주요 원인이었을 것입니다.
+  => 이러한 센서를 사용하면 레벨 모드가 훨씬 나아졌습니다.
+  하나의 결과 : TRUSTED ACC가 기본적으로 활성화되어 이제는
+  향후 버전에서 제거 될 예정입니다.
+
+  PID LEVEL 설정의 용어 D가 이제 효과를 제한하는 데 사용됩니다
+  Shikra의 제안 덕분에 레벨 수정
+   (http://www.multiwii.com/forum/viewtopic.php?f=7&t=905 참조).
+  기본적으로 (D = 100) 안정 모드의 동작은 변경되지 않습니다.
+  낮은 D의 경우 효과는 다음과 같습니다.
+   - 스무딩 레벨 변경
+   - 죽음의 흔들림을 방지해야합니다.
+
+
+
+고도 유지 모드 :
+  이 기능에 대한 많은 히트 곡이있었습니다.
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=562
+  http://www.multiwii.com/forum/viewtopic.php?f=7&t=363
+
+  모든 것이 완벽하지는 않지만 Marcin 덕분에 우리는 거대한
+  개선 및 대부분의 설정에서 기본 설정 *으로 작동하는 alt 보류 *
+  해결해야 할 이상한 점이 몇 가지 있습니다.
+
+
+*** Velocity PID는 현재 코드에서 사용되지 않습니다 ***
+
+
+
+GPS 모드 :
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=649
+
+  이제 2 개의 GPS 장치가 지원됩니다.
+  
+  직렬 GPS
+   FC의 무료 직렬 포트에 연결되어야합니다 (MEGA 보드 필요)
+   config.h에 정의되어야합니다.
+   #define GPS_SERIAL 2 <- 무료 직렬 포트
+   #define GPS_BAUD 115200
+
+   GPS POSITION HOLD 및 GPS RETURN to HOME은 모두 직렬 GPS 옵션으로 구현됩니다.
+
+  I2C 직렬 보드
+   EOSBandi는 특정 arduino + 시리얼 GPS를 추가하는 코드를 만들었습니까?
+   I2C를 통해 다중 윅과 통신합니다.
+   http://code.google.com/p/i2c-gps-nav/
+   config.h에 정의되어야합니다.
+   #define I2C_GPS
+
+  GPS가 적어도 4 개의 위성을 수신하면 홈의 위치가 정의됩니다.
+  그런 다음 2 개의 GPS 모드가 있습니다.
+   -ReturnToHome : 활성화되면 멀티가 GPS 홈 GPS 좌표로 돌아갑니다.
+   -PositionHold : 활성화되면 멀티가 그 위치에 머물러있게됩니다.
+
+  GPS 모드에는 다음이 필요합니다.
+   - 모터 구동으로 방해받지 않는 매우 잘 보정 된 MAG.
+    (자기장의 전류는 MAG에 영향을 미치지 않습니다. 그렇지 않으면,
+    GPS는 뭪 잘 작동합니다)
+   레벨 안정화를 위해 정확하게 조정 된 ACC
+
+  이 원리는 그 순간 매우 간단합니다 : multiwii가 기울기를 시도합니다.
+  타겟 포인트의 방향에있는 멀티.
+  거리에 비례한다.
+  GUI에 PID 설정이 추가되었습니다.
+   P = 목표 거리에 비례 한 각도 기울기
+    GUI에서 P = 5.0, 1 미터 = 0.5deg 경사
+   나는 현재 사용되지 않는다.
+   D = GPS 보정으로 인한 최대 각도 기울기 (15 초부터 시작)
+
+
+  처음 작동하는 GPS가있는 좋은 vids :
+   EOSBandi : http://www.youtube.com/watch?v=pJJKG6uWqv4
+   nhadrian : http://www.youtube.com/watch?v=YcLJfC4h90M
+
+더 많은 모터 / 더 많은 서보 / 더 나은 출력 정확도 :
+
+  Ronco 덕택에 output.pde 부분은 처음부터 거의 다시 작성되었습니다.
+  이전에는 불가능했던 새로운 조합이 생겨났습니다.
+
+  하드웨어 PWM의 효율성 향상 : digitalWrite arduino 기능은
+  출력 포트를 직접 주소 지정하기 위해 제거되었습니다.
+  하나의 결과 : 모터 순서는 더 이상 쉽게 구성 할 수 없습니다.
+
+  MEGA 보드에서 : 처음 6 개의 모터는 이제 구성된 타이머에 의해 구동됩니다.
+  16 비트 모드에서.
+  차이는 쿼드 비행에서 두드러집니다.
+  예를 들어 쿼드 (quad)를 실행하는 MEGA 보드의 경우 정말 좋은 개선점입니다.
+
+  확장 된 모터 범위 옵션 (wii-ESC와 함께 사용, 해상도 250 단계 대 125 단계 표준)
+  자세한 정보는 http://www.multiwii.com/forum/viewtopic.php?f=13&t=516을 참조하십시오.
+
+
+  328p 기반 보드 (promini) : 이제 다음과 같은 구성을 사용할 수 있습니다.
+   16 진수 (FLAT X, FLAT + 또는 Y6)
+    - 표준 수신기 :이 경우 2 개의 마지막 모터는
+      D5 & D6 대신 PIN A0 / A1에
+    - 또는 여전히 PPM SUM 수신기가있는 경우
+    - GIMBAL 모드에서 2 서보 + CAM TRIG에서 1 서보 :
+     - PPM 합계 수신기가있는 경우 :이 경우 마지막 두 모터는
+       PIN D5 & D6에 있고 서보는 PIN A0 / A1 / A2에 있습니다.
+     - 표준 수신기 :이 경우, 마지막 2 개의 모터는
+       PIN A0 / A1에 있고 서보는 PIN A2 / D12에 있습니다 (여기서 CAM 트라이얼 없음)
+
+   OCTO config (FLAT X, FLAT +, X8) :
+    - 표준 수신기가 있거나 없음 : PIN 3,9,10,11, A0, A1, A2,12
+    - 서보가 없다.
+
+  Config 구성표는 다음과 같이 문서화되어 있습니다.
+  http://www.multiwii.com/connecting-elements
+
+New config:
+  - Flying wing was introduced as beta, and is now successfully tested:
+    http://www.multiwii.com/forum/viewtopic.php?f=8&t=594
+  - VTAIL
+
+
+
+
+새 구성 :
+  - Flying wing은 베타 버전으로 소개되었으며 성공적으로 테스트되었습니다.
+    http://www.multiwii.com/forum/viewtopic.php?f=8&t=594
+  - VTAIL
+
+
+
+LCD
+  현재 지원되는 LCD는 다음과 같습니다.
+   - LCD_SERIAL_3W : Alex의 초기 변형 3 선식 직렬
+     sparkfun의 LCD, 전송을 위해 rx-pin을 사용하여 @ 9600 baud 고정
+   - LCD_TEXTSTAR : 고양이 수염 LCD_TEXTSTAR 모듈 CW-LCD-02
+     (메뉴 선택을위한 4 개의 입력 키가 있음)
+   - LCD_VT100 : vt100 호환 터미널 에뮬레이션 (블루투스, 퍼티 등)
+     대체 GUI (vt-100 인식) 터미널 프로그램 (BT는 선택 사항)
+     대부분의 태블릿, 스마트 폰 등에서 작동합니다.
+     http://www.multiwii.com/forum/viewtopic.php?f=7&t=1096
+   - LCD_ETPP : i2c 장치 (직렬이 아닌) 인 Eagle Tree Power Panel LCD
+   - LCD_LCD03 : i2c 장치 인 LCD03
+     http://www.multiwii.com/forum/viewtopic.php?f=8&t=1094
+
+  - LCD를 통해 사용자가 구성 할 수있는 서보 중점 (기본 1500)
+    Flying Wing 및 TRI에 대한 컴퓨터 서브 미션 (TX)
+
+
+
+LED
+  12 개의 RBG LED가있는 I2C LED 링 장치가 옵션으로 통합되었습니다.
+  다중 상태에서 센서 상태에 대한 피드백을 더 많이 제공합니다.
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=902
+  http://www.dailymotion.com/video/xmdqa9_ledringmultiwii_tech
+
+
+헤드 프리 모드
+  MK Carefree 모드와 비슷한 기능이 추가되었습니다.
+  mahowik에 의해 처음 도입 된 단순 모드?
+  http://www.multiwii.com/forum/viewtopic.php?f=7&t=925
+  스위치를 통해이 모드를 활성화하기 위해 GUI에 특정 확인란이 추가되었습니다.
+  보드에 자력계와 가속도계가 있어야합니다.
+  원리 : 엔진을 켜면 헤드 / 프런트가 기억됩니다.
+    따라서 비행 중 모드를 켜거나 끌 수 있음을 의미합니다.
+
+
+
+통과 모드
+  GUI의 확인란입니다.
+  목적은 날기 ??날개와 같은 일부 구성에 대해 IMU를 우회하는 것입니다.
+
+
+
+비 퍼 모드
+  GUI의 확인란입니다.
+  부저가있는 경우 신호기를 활성화하는 것이 목적입니다.
+  설치하고 예를 들어 높은 잔디에서 멀티를 잃어 버렸습니다.
+
+
+
+새로운 스틱 콤보
+  마그네토 교정 용 (스로틀 = 위 요우 = 오른쪽 피치 = 아래)
+
+
+
+더 나은 자력계 교정
+  자력계의 보정이보다 정확 해졌고,
+  그것은 크기의 상대적 강도를 고려하기 때문에
+  각 축의 투영.
+  EOSBandi가 제안한 코드를 기반으로
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=1068
+
+  목표 지점 정확도로 GPS 복귀를 개선해야합니다.
+
+
+자이로 매끄럽게하기
+  자이로를 부드럽게하는 2 가지 옵션이 있습니다 : (주로 고정 날개 설정에 유용합니다)
+   - LPF 기반의 축 당 : #define GYRO_SMOOTHING {20, 20, 3}
+     // 롤, 피치, 요에 대한 평균 평균 범위를 분리합니다.
+   - 모든 축에 대해 이동 평균을 기준으로 (Magnetron에서)
+     #define MMGYRO
+     #define MMGYROVECTORLENGHT 10
+
+  Servo Gimbal Smoothing은 동일한 원칙을 기반으로하는 옵션입니다.
+     #define MMSERVOGIMBAL
+     #define MMSERVOGIMBALVECTORLENGHT 32
+
+
+
+기내 ACC 교정 :
+  비행 테스트를 통해 레벨을 보정하는 방법.
+  config.h에 정의되어야합니다.
+  #define InflightAccCalibration
+
+  jevermeister가 제안한
+  http://www.multiwii.com/forum/viewtopic.php?f=7&t=893
+
+코딩 개선 :
+  PROGMEM 문 사용을 통한 RAM 메모리 사용 감소
+
+  더 이상 Arduino 직렬 기능 => 새로운 직렬 통신이 더 효율적입니다.
+
+  보드 및 센서 방향 :
+   이것은 처음에는 잘 코딩되지 않은 것이 었습니다.
+   http://www.multiwii.com/forum/viewtopic.php?f=8&t=1259
+   이 모드는 보드 정의에 영향을 주어서는 안됩니다 (축의 재 매핑이 수행되었습니다)
+   개별 센서 방향 : 동일하지 않으며 정상입니다.
+   여기에서 수정할 버그가 없습니다.
+
+  지터 시간 루프를 줄이기 위해 메인 루프의 작업 상태
+
+
+GUI
+  GUI의 I2C 오류 상태 표시
+
+  새로운 AUX3 / AUX4 체크 박스.
+  이제 활성화 / 비활성화 할 수있는 더 많은 가능성을 가질 수 있습니다.
+  특정 기능 (당신이 8 채널 RC 시스템을 가지고 있다고 가정 할 때 3 상태를 가진 4 스위치)
+  이전 CAM1 / CAM2 RC 채널 (AUX3 / AUX4)은 여전히 ??사용할 수 있습니다
+   AUX3 / AUX4 체크 박스가 사용되지 않는 경우 보조 피치 / 롤 짐벌 시스템 용.
+
+  모든 auxN 옵션의 상태에 대한 시각적 피드백
+
+  GUI는 전체 MWC 펌웨어 버전 번호를보고합니다.
+
+  물론 EOSBandi의 멋진 WinGUI 버전이 있습니다.
+  그것은 확실히 자바보다 더 친근하다.
+  로드 / 쓰기 구성과 같은 더 많은 기능을 허용합니다.
+  http://www.multiwii.com/forum/viewtopic.php?f=8&t=1229
+
+
+
+OSD
+  rushduino는 기본적으로 OSD 기능이있는 arduino 보드입니다.
+   그것은 오픈 소스이기 때문에 매우 유연한 솔루션입니다.
+   센서 정보를 검색하기 위해 다중 직렬 포트에 연결됩니다.
+   http://www.multiwii.com/forum/viewtopic.php?f=8&t=922
+
+  MIS OSD는 또한 업데이트되어 multiwii는 OSD에서 GPS 정보를 가져올 수 있으며,
+   또는 OSD가 다중 궤적으로부터 GPS 정보를 취할 수 있음
+
+
+
+1.8 -> 1.9
+   
+
+- PPM 합계 수신기 코드와 표준 수신기 코드 간의 일부 인수 분해
+    - 실험 : Captain IxI & Zaggo의 기여로 직접 SBUS 수신기 통합
+      이를 위해서는 다음을 사용해야합니다.
+         - MEGA 보드
+         - 직렬 1 포트의 RX1
+         - 입력 신호를 반전시킬 수있는 방법이 있습니다.
+      자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=7&t=289
+    - 실험 : Danal Estes의 기여로 SPEKTRUM 위성 수신기의 통합
+      이를 위해서는 다음을 사용해야합니다.
+         - MEGA 보드
+         - 직렬 1 포트의 RX1
+      일부 제한 사항 (독점적 인 GUI 또는 Spektrum 사용)이있는 ProMini 보드에서도 사용할 수 있습니다.
+      더 많은 정보는 여기 : http://www.rcgroups.com/forums/showthread.php?t=1504116
+    - 실험 : 직접 직렬 RX 통합, 예를 들어 Bluetooth + 전화 신호에서 멀티를 명령합니다.
+      루이스 덕택입니다.
+    루프 사이클을 줄이기위한 많은 최적화
+    - GPS 주요 기능 통합
+        NMEA 문장이있는 GPS를 연결하고 인식하는 코드는 여기에 있습니다.
+        현재 계산 :
+          - 앉아있는 사람의 수
+          - 집과의 거리
+          - 집 방향
+현재 잘 작동하는 GUI를 제외하고는 제어 코드가 없습니다.
+=> 진행중인 GPS HOME 및 GPS HOLD 뒤에 코드가 없습니다.
+    - 6 개의 모터 구성 및 promini 구성에 대한 PIN D5 및 D6 대신 PIN A0 및 A1
+      이 모드를 사용하면 프로 미니에서 표준 수신기를 사용할 수 있습니다.
+      (PPM 합계 수신기를 사용할 필요가 없음)
+      #define A0_A1_PIN_HEX
+
+- PIN8 또는 PIN12를 AUX2 RC 입력으로 사용할 수 있습니다.
+      이 경우 POWER PIN (핀 12) 또는 BUZZER PIN (핀 8)을 비활성화합니다.
+      #define RCAUXPIN8 또는 #define RCAUXPIN12
+    - Danal, 구성을위한 Eagle Tree Power Panel LCD 통합
+      고유 한 직렬 포트가 필요하지 않기 때문에 ProMini에 매우 편리한 I2C LCD입니다
+    - 하나의 FC :
+      QUADRINO_ZOOM 보드 통합
+      MINIWII : Jussi의 MiniWii 비행 컨트롤러
+    - 센서 보드 :
+      SIRIUS600 // 자이로 (Gyro) 용 WMP를 사용하는 Sirius Navigator IMU
+      CITRUSv1_0 // qcrc.ca의 CITRUSv1
+      DROTEK_IMU10DOF
+    - ATAVRSBIN1 방향 조정 (http://www.multiwii.com/forum/viewtopic.php?f=8&t=506&start=60#p4950)
+    - 스케치에서 PROMINI 또는 MEGA를 더 이상 정의 할 필요가 없습니다.
+      이 정보는 Arduino IDE에서 보드 선택 형태로 그려져 있습니다.
+    - LEVEL 드리프트 문제 :
+      이 문제의 뿌리가 (적어도 부분적으로) 확인되었습니다.
+      문제를 해결하기위한 몇 가지 옵션이 있습니다.
+      - 일부 스로틀이 적용될 때 거대한 ACC Z 변형이있는 사람들을 위해 #define TRUSTED_ACCZ 추가
+        (ACCZ를 작성하기 전에해야 할 테스트입니다)
+// # TRUSTED_ACCZ -> 정의 ACCZ는 작은 각 계산을 고려하지 않습니다.
+#define TRUSTED_ACCZ -> 작은 각도 계산시 ACCZ가 고려됩니다.
+      - BMA180 init이 다른 모드로 변경됩니다 : 잡음이 많은 설정을 필터링하는 데 도움이됩니다.
+      안정 코드에 여전히 문제가있는 사람들을 위해 #define STAB_OLD_17을 추가합니다.
+        이전 1.7 레벨 코드 (덜 정교함)가 드리프트를 일으키지 않는 것처럼 보입니다.
+     - 일부 비행 윙 코드 업그레이드 (햄버거 제안 덕분에)
+     - ACC 추가 : LSM303DLx_ACC
+
+
+1.8 패치 2 :
+    - SIRIUS 9DOF + baro IMU 통합
+    - 디버깅 FREEIMUv035_MS 바로 코드
+    - ACC를 고려하여 태도 IMU 계산에 다른 조건 추가
+      (LEVEL 드리프트 문제를 방지하는 데 도움이 됨)
+
+1.8 패치 1 :
+
+MAIN SOFT : PeterPilot의 제안 덕분에 데드 밴드 구현이 향상되었습니다.
+    http://www.multiwii.com/forum/viewtopic.php?f=7&t=608
+
+MAIN SOFT : CAM TRIG 서보 용 메가 보드의 PIN 46 업데이트 (플라이 두 이노 보드에 더 편리함)
+
+MAIN SOFT : jevermeister 덕분에 안전 장치가없는 작은 버그 수정
+    어떤 조건에서 모터가 고장 나지 않도록 방지
+    http://www.multiwii.com/forum/viewtopic.php?f=8&t=610
+
+MAIN SOFT : 메가 보드 정의에서 BUZZERPIN, STABLEPIN, DIGITAL_TILT_PIN에 대한 작은 버그 수정
+    http://www.multiwii.com/forum/viewtopic.php?f=8&t=583&start=10#p3049
+
+주 소프트 : OCTOP 버그 수정 (왼쪽 모터가 올바르게 PID 혼합되지 않음)
+
+GUI : Hamburger가 발견 한 직렬 프로토콜에 대한 사소한 버그 수정
+
+주요 부드러움 :
+    Fabio에서 5 개의 무료 IMU 가능성 및 그에 따른 방향에 대한 수정.
+
+new in 1.8 version:
+
+MAIN SOFT : 코드 모듈화.
+     이제 여러 .pde 파일이 있습니다.
+     구성은 config.h에서만 변경해야합니다.
+     파일은 Arduino IDE로 열리 며 (하나의 파일을 열고 나머지 파일이 따라옵니다)
+     이 변경으로 향후 MultiWii 프로젝트의 확장이 더욱 쉬워 질 것입니다.
+
+MAIN SOFT : 다중 하드웨어 호환 보드의 곱셈으로 인해
+     처음 config.h에서 자동으로 관리하려고합니다.
+- 센서
+- 오리엔테이션
+- I2C 주소
+     순간:
+FFIMUv1 // 첫 번째 9DOF + Jussi의 Baro 보드, HMC5843 <- 테스트 Alex
+FFIMUv2 // 9DOF의 두 번째 버전 + Jussi의 Baro 보드, HMC5883 <- 테스트 Alex
+FREEIMUv1 // Fabio의 9DOF 보드 v0.1 및 v0.2 및 v0.3 버전
+FREEIMUv035 // FreeIMU v0.3.5 no baro
+FREEIMUv035_MS // FreeIMU v0.3.5_MS
+FREEIMUv035_BMP // FreeIMU v0.3.5_MS
+PIPO // 9DOF 보드 from erazz
+QUADRINO // 가득 찬 FC 보드 9DOF + witespy의 baro 보드 <- Alex 테스트
+ALLINONE // 전체 FC 보드 또는 CSG_EU의 독립 실행 형 9DOF + 바로 보드
+AEROQUADSHIELDv2 // 9DOF 버전의 aeroquad shield v2
+ATAVRSBIN1 // Atmel 9DOF (EOSBandi 기고). 보드는 3.3V 전원이 필요합니다.
+     다른 구성으로 개별 센서를 선언 할 수도 있습니다.
+     모든 것이 주석 처리 된 경우 (기본 conf) MultiWii는 WMP 또는 WMP + NK 만 연결되어 있다고 가정합니다.
+
+MAIN SOFT : 스틱 중심 주변에 데드 밴드 도입
+     #define DEADBAND를 통해. (기본적으로 주석 처리 됨)
+     정확한 포텐쇼미터가 아닌 RC TX의 정확성을 얻는 데 도움이 될 수 있습니다.
+     그러나, 그것은 중앙 데드 밴드를 도입하기 때문에, TX 트림은 이전처럼 효율적이지 못합니다.
+
+주심 : 새로운 고도 유지
+     이제 작업 구현이 있습니다 :)
+     ziss_dm 덕분에 고도를 더 정확하게 추정 할 수 있습니다.
+     Z ACC는 alt 홀드 추정에 통합되어 단기 변동을 추정하는 데 많은 도움이됩니다.
+     어떻게:
+        멀티는 고도 유지가 활성화되기 전에 거의 고도가 안정되어야합니다.
+        그런 다음 스로틀 값 주위에 불감 대가 생성됩니다.
+     스로틀이 데드 밴드에서 벗어날 때마다 매 순간 트로틀 파워를 제어 할 수 있습니다
+     이것은 활성화되기 전에 멀티가 꽤 정적 일 필요가 있기 때문에 가장 좋은 구현은 아니지만 좋은 시작입니다.
+     
+     분리되어 사용될 수있는 분리 된 2 개의 PID가 있습니다.
+ALT PID : P 만 사용하면 더 나은 결과를 얻을 수 있습니다 (P = 4.7 I = 0 D = 0이 기본값 임)
+VEL PID : 속도 PID를 나타냅니다. 여기에 자세한 정보가 있습니다. (P = I = D = 0이 기본값입니다)
+            모든 고도 변화를 부드럽게하는 데 도움이됩니다.
+            http://www.multiwii.com/forum/viewtopic.php?f=7&t=363
+
+GUI : 고도 표현
+     고도 변화가 더 잘 보이도록 GUI에 자동 크기 조정 기능이 있습니다.
+     따라서 GUI에서 커다란 고도 곡선의 진폭에 대해 놀라지 마십시오.
+     고도는 GUI의 미터 단위로 표시됩니다.
+     멀티가 Z 이동이 아닌 정상적인 변화는 약 0.5m가되어야합니다.
+
+ALL : 햄버거, 파워 미터 평가자 통합에 감사드립니다.
+     전압 판독 값 (현재 GUI에서 사용 가능) 및 경보 설정.
+     (config.h 파일의 전체 설명 및 매뉴얼 참조)
+     자세한 정보는 http://www.multiwii.com/forum/viewtopic.php?f=8&t=167을 참조하십시오.
+
+주요 소프트 : LCD 텔레 메 트리의 통합 인 햄버거에게 감사드립니다.
+     TEXT STAR LCD로 매우 편리하며 4 개의 버튼이 있습니다.
+     버튼이없는 다른 LCD의 경우 텔레 메 트리 자동 전환 구현
+     (config.h 파일의 전체 설명 및 매뉴얼 참조)
+
+MAIN SOFT : ziss_dm 힌트 덕분에 자이로는 더 많은 소프트웨어 내부 해상도로 계산됩니다.
+     이것은 전반적인 자세를 부드럽게합니다.
+     매우 시끄러운 WMP 복사본으로는 그리 좋지 않을 수 있습니다.
+
+MAIN SOFT : ITG3200 자이로에 더 많은 설정 가능
+     또한 수정 된 ITG3200 초기화에 관한 버그가있었습니다.> 2000deg / s 설정이 사용되었습니다.
+
+     EOSBandi 덕분에 : ITG3200 & ITG3205 로우 패스 필터 설정. (config.h 파일의 #define을 보라)
+     자이로에 대한 모든 진동을 제거 할 수없는 경우,
+     LPF 주파수를 줄이려면 시도 당 한 단계 만. 경련이 사라지 자마자 그 환경을 고수하십시오.
+     피드백 워블에는 도움이되지 않으므로 헬터가 무작위로 찌그러 뜨리거나 모든 댐핑 및
+     균형 조정 옵션이 모두 종료되었습니다. 하나의 옵션 만 주석 처리를 해제하십시오!
+     중대한! 로우 패스 필터 설정 변경은 PID 동작을 변경하므로 LPF를 변경 한 후 PID를 다시 조정하십시오.
+     관련된 #define에 대해서는 config.h를 참조하십시오.
+
+MAIN SOFT : 새로운 각도 계산 ziss_dm
+     일정한주기 시간을주는 완전히 새로운 접근법입니다.
+     모든 태도의 표현.
+     각도가 90 °에 이르면 약간의 특이점이 있습니다. 정상입니다.
+
+MAIN SOFT : ziss_dm 덕분에 레벨 모드를 사용할 수있는 또 다른 방법이 있습니다.
+     오버 슈트는 가능하지 않지만 반응 시간은 더 길다.
+     자세한 정보는 여기에 있습니다 : http://www.multiwii.com/forum/viewtopic.php?f=8&t=503
+
+MAIN SOFT : 코드 재 작업 : RX 비율 / 엑스포는 이제 아무런 부 풀도없이 조회 테이블을 통해 보간됩니다.
+
+GUI : shama 덕분에, 경고 메시지의 불일치
+
+MAIN SOFT : C2po 덕분에 BMA180 I2C 초기화가 좀 더 조정되었습니다.
+
+
+ALL : OCTOX8 (듀얼 동축 quadX), OCTOFLAT +, OCTOFLATX
+     모터 순서 : PIN 3,5,6,2,7,8,9,10
+     OCTOX8 :
+         REAR_R, FRONT_R, REAR_L, FRONT_L, UNDER_REAR_R, UNDER_FRONT_R, UNDER_REAR_L, UNDER_FRONT_L
+     OCTOFLATP :
+         FRONT_L, FRONT_R, REAR_R, REAR_L, FRONT, RIGHT, REAR, LEFT
+     OCTOFLATX :
+         MIDFRONT_L, FRONT_R, MIDREAR_R, REAR_L, FRONT_L, MIDFRONT_R, REAR_R, MIDREAR_L
+     하나의 세부 사항 : GUI는 아직 8 개의 모터 및 3D 표현을 오른쪽에 표시하도록 조정되지 않았습니다.
+
+주요 소프트 : 채널 7 & 8이있는 PITCH & TILT 카메라 보정이 이제 작동 중입니다.
+     - SERVO_TILT 옵션과 함께 사용해야합니다.
+     - CAMSTAB GUI checkbox 옵션으로 TILT / ROLL 기울기 보정이 여전히 트리거됩니다.
+
+GUI : 햄버거에 의한 improvment
+     개선 gui에서 장치 목록과 그게 좀 더 튜닝있어.
+       - 알려진 장치가 너무 많아 목록이 너무 짧습니다. 일부 수직 공간은 사용되지 않지만,
+          더 긴 상자가 가능하다.
+       - 매킨토시에서 각 bt- 장치에 대해 두 개의 장치 파일을 얻습니다.
+          cu.name 및 tty.name. arduino 문서에서 tty.name을 사용하는 것이 좋습니다.
+          목록에 cu.name 장치를 추가하지 마십시오.
+       - 선행 tty를 제거하십시오. 이름에서 가독성을 위해 제한된 공간을 사용합니다.
+
+LCD : Hamburger의 improvment : EEPROM 메뉴에서 저장하지 않고 종료
+     LCD를 광범위하게 사용하여 값을 볼 수 있습니다 (특히 개발 버전의 경우).
+     따라서 eeprom에 대한 완전한 쓰기를 수행하지 않고 LCD 구성 루프를 종료 할 필요가 있습니다.
+     eeprom은 단지 100,000 쓰기 사이클로 제한됩니다.
+
+ALL : Cass3825 덕분에 AUX 스위치를 통한 새로운 옵션 무장 절차
+     이 옵션은 "ARM"행에서 적어도 하나의 체크 상자가 선택된 경우에만 활성화됩니다
+     tx 스위치가 무장 위치에있는 동안 헬리콥터가 막히면 모터가 멈추지 않습니다.
+     스위치를 사용하여 위치를 해제 한 다음 팔 위치로 돌려서 모터를 준비해야합니다.
+
+     언급 할 가치가있는 또 다른 '기능'은 스위치 위치의 변경 만
+     스로틀 스틱이 완전히 아래로 내려 갔을 때 인정합니다.
+     이렇게하면 중간 또는 완전 스로틀에서 모터가 우발적으로 작동하지 않게됩니다.
+     하나의 단점은 스로틀 스틱이 완전히 내리지 않는 한 모터가 해제되지 않는다는 것입니다.
+
+ALL : 이제 GUI에서 MAG를 교정 할 수 있습니다 (처음에는 필수 항목 임).
+일단 활성화되면 LED는 30 초 동안 매우 빠르게 깜박입니다.
+가능한 모든 방향으로 멀티를 움직일 정확히 30 초가 있습니다.
+(각 축에 한 번만 충분하다)
+존경의 명령은 없지만 모든 방향을 다루는 것이 중요합니다.
+
+GUI : MAG 3 축 원시 값 소개
+
+주요 소프트 : BI-COPTER PIN 6 서보 보정
+
+주심 : 주머 니 덕분에,
+      PPM 합계 리시버의 failsafe 기능이 조금 잘못되어 더 잘 처리 할 수 ??있습니다.
+      짧은 펄스의 비정상적인 신호 패턴.
+
+
+1.7 list of differences with the 1.6
+
+1.7 1.6과의 차이 목록
+
+ALL : BARO는 더 정확하지만 여전히 완벽하지는 않습니다 (진폭 1m ~ 2m). 코드 문제이며 baro 구성 요소 문제는 아닙니다.
+
+ALL : RC 채널 AUX2, CAM1 CAM2가 추가되었습니다. PPM SUM 스트림 또는 MEGA 보드에만 해당됩니다.
+ 표준 수신기가있는 328p에서는 처음 5 개 채널 만 인식됩니다.
+ CAM1 및 CAM2 컨트롤은 아직 구현되지 않았습니다.
+
+ALL : AUX1 및 AUX2 스위치는 3 가지 상태로 완전히 사용자 정의 할 수 있습니다.
+개별 레벨 모드 (ACC), 바로 또는 나침반 (mag)을 활성화 / 비활성화 할 수 있습니다.
+그것은 장래에 다른 것들을 제어 할 수있는 일반적인 접근 방법입니다.
+이 원칙에 따라 4 채널 만 있어도 원하는 옵션을 영구적으로 활성화 할 수 있습니다.
+(FORCE LEVEL 옵션을 교체하십시오)
+
+ALL : CAM triger 옵션 :
+서보를 디지털 핀 A2 (프로 미니)에 연결하여 카메라 트리거를 활성화 할 수 있습니다
+이 옵션은 버튼 구성 패널 AUX1 / AUX2를 통해 활성화 또는 비활성화 할 수 있습니다
+#define CAM_SERVO_HIGH 2000 // 하이 상태 서보의 위치
+#define CAM_SERVO_LOW 1020 // LOW 상태 서보의 위치
+#define CAM_TIME_HIGH 1000 // ms 단위로 표현 된 HIGH 상태 서보의 지속 시간
+#define CAM_TIME_LOW 1000 // LOW 상태 서보의 지속 시간 (ms)
+arduino 메가의 PIN도 A2이지만 이것은 최종 PIN 매핑이 아닙니다.
+
+
+ALL CAM stab (서보 틸트) 버튼 옵션 :
+서보 틸트 옵션은 버튼 구성 패널 AUX1 / AUX2를 통해 활성화 또는 비활성화 할 수 있습니다
+
+ALL : BI COPTER는 이제 아바타 스타일 구현입니다.
+프로 미니 : 9 모터 왼쪽, 10 모터 오른쪽, 11 서보 왼쪽, 3 서보 오른쪽
+메가 : 3 모터 좌측, 5 모터 우측, 6 서보 좌측, 2 서보 우측
+
+ALL : Y4 추가 (테스트하지 않음)
+프로 미니에 : 모터 9,10,11,3
+on mega : 모터 3,5,6,2
+REAR1, FRONT R, REAR2, FRONT L
+
+ALL : HEX6X 추가 (테스트하지 않음)
+프로 미니에서 : 모터 9,10,11,3,6,5
+on mega : 모터 3,5,6,2,7,8
+REAR_R, FRONT_R, REAR_L, FRONT_L, RIGHT, LEFT
+
+ALL : 새로운 레벨 모드
+레벨 모드는 일관된 독립 트림으로 완전히 재 설계되었습니다.
+이제 각도 추정에 기반한 레벨 모드를위한 PI 제어 루프가 있습니다.
+이전 자동 레벨 강도 값은 일종의 P 만 제어 루프였습니다.
+새로운 코드를 사용하면 I 항은 각도 위치 정확도를 높이기 위해 나머지 각도 오차를 수정할 수 있습니다.
+RC 비율 = 1 일 때, 풀 스틱에서의 각도는 약 45도입니다.>이 모드에서는 플립이 일어나지 않아야합니다.
+
+
+MAIN SOFT : 안정된 모드를위한 소프트웨어 트림
+이제 acro 모드에 사용 된 것과 동일한 TX trim과 일치하도록 레벨 모드의 트림을 조정할 수 있습니다.
+1) 모터 해제
+2) 풀 스로틀 (1900보다 커야 함)
+3) 전체 PITCH 앞 / 뒤 및 전체 ROLL 좌 / 우 (2 축 가능성)에 따라 레벨 모드가 트리밍됩니다.
+변경하려는 중립 각. 상태 LED가 깜박이면서 틱이 하나씩 확인됩니다.
+
+MAIN SOFT : 새로운 교정 절차
+ACC 교정은 이제 자이로 교정과 다릅니다.
+자이로 교정 : 각 전원을 켤 때마다 수행됩니다. 이전과 같이 수동으로 가능합니다. min throttle + full pitch
+backward + full yaw left.
+acc 캘리브레이션 : 모터 무장 해제, 전체 스로틀 업, 전체 피치 후진 + 전체 편주.
+
+주요한 부드러움 : 그것은 1.6에 있었지만 언급되지 않았습니다. 모터 가동 / 해제가 가능합니다.
+분 스로틀 + 풀 요 스틱 또는 풀 스틱을 사용합니다.
+
+MAIN SOFT : 4 개 이상의 모터로 멀티에 대한 안티 요 (anti yaw) 점프 변경
+
+MAIN SOFT : tricopter 용 서보 레인지
+#define TRI_YAW_CONSTRAINT_MIN 1020
+#define TRI_YAW_CONSTRAINT_MAX 2000
+
+주요 부드러움 : Ciskje 덕분에 L3G4200D 자이로 (이 자이로가 PIPO ISU에 있음)
+
+주요 부드러움 : HMC5883 나침반 통합
+
+
+주요한 부드러움 : 나침반 자물쇠는 지금 작동한다
+이 옵션은 버튼 구성 패널 AUX1 / AUX2를 통해 활성화 또는 비활성화 할 수 있습니다
+스틱이 풀린 후 1 초 후에 잠금 장치가 활성화됩니다.
+YAW가 중앙 +/- 50으로 고정되어있는 경우에만 잠금 장치가 유지됩니다
+어떤 경우에는 특히 5883을 사용하는 경우 탄창을 보정해야합니다. 방향이 좋지 않습니다.
+보정 절차가 아직 구현되지 않았습니다.
+
+MAIN SOFT : 서보 틸트에 버그가있었습니다 (변수 오버플로로 인해 약 45 °에서 0으로 되돌아 왔습니다)
+
+MAIN SOFT : Syberian 덕분에 호버링 직전에 ACC가 수정되지 않도록 버그가 수정되었습니다.
+         처음에는 자동 레벨을 사용할 때 이상한 플립을 설명 할 수 있습니다.
+
+MAK SOFT : ziss_dm 덕분에 ITG3200에 대한 버그가 수정되었습니다. 변수가있었습니다.
+오버플로는 높은 PITCH 변형에만 발생합니다.
+
+MAIN SOFT : mis_b (MIS) 덕분에 오류 방지 코드가 통합되었습니다.
+ Failsafe는 THROTTLE 채널 (표준 PPM 수신기)에서 RC 펄스가 없음을 감지합니다.
+ 펄스가 OFF이면 안전 장치 절차가 시작됩니다.
+
+ 구성 가능한 FAILSAVE_DELAY 시간 동안 펄스가없는 경우,
+ 레벨 모드가 ON으로 전환됩니다 (ACC 또는 nunchuk이 사용 가능한 경우).
+ PITCH, ROLL 및 YAW는 중앙에 위치하며 THROTTLE은 FAILSAVE_THROTTLE 값으로 설정됩니다.
+ 이 값은 구성, AUW 및 일부 다른 매개 변수에 따라 다릅니다.
+
+ 다음으로 afrer 구성 가능한 FAILSAVE_OFF_DELAY 시간,
+ 헬리콥터가 해제되고 모터가 정지합니다.
+ RC 펄스가 FAILSAVE_OFF_DELAY 시간에 도달하기 전에 다시 돌아 오면,
+ 작은 시간 후에 RC 컨트롤은 정상으로 되돌아갑니다.
+
+페일 세이프는 #define을 통해 비활성화 할 수 있습니다.
+
+SITE: www.multiwii.com was updated accordingly.
+
+MAIN SOFT : ziss_dm 덕분에 nunchuk 혼자 통합 (WMP와 호환되지 않고 독립형 I2C ACC로 간주 됨)
+
+MAIN SOFT : 매기 지시가 취소 된 버그 수정
+
+MAIN SOFT : 각도 계산시 작은 버그 수정 (변환 rad-> 1/10 deg)
+
+MAIN SOFT : ITG3200 초기화 후 약간의 지연이 추가되어 보정이 향상되었습니다.
+
+MAIN SOFT : 자라 덕분에,
+vbat 코드 단순화 + 저역 통과 필터.
+#define을 통한 vbat 활성화.
+상태 LED와 경보 연결
+
+MAIN SOFT : 2 시퀀스 사이의 PPM 합 인식 지연을 줄입니다 (5ms -> 3ms).
+frsky PPM 합계 문제의 근원이 될 수 있습니다.
+
+GUI : 3D 헬기 태도 시각화
+
+GUI : ACC 교정. 이제 GUI에서 직접 ACC를 보정하는 보정 버튼이 있습니다.
+(소프트 트림을 재설정합니다)
+
+GUI : Eberhard 덕분에 Mac OS X 및 Linux에서 직렬 포트를보다 잘 표시 할 수 있습니다.
+
+GUI : 메모리 누수 버그 GUI가 수정되었습니다.
+
+GUI와 LCD : D가 이제는 긍정적인데 (설명에 혼란을 피하기 위해)
+
+LCD : Shirka가 시작한 작업 덕분에 LCD를 통해 모든 매개 변수를 사용자 정의 할 수 있습니다.
+이 첫 번째 것은 가장 많이 사용되는 것처럼 ROLL & PITCH 모두에 대해 여전히 P입니다.
+
+LCD : TextStar LCD 탱크를 햄버거 및 gtrick90 코드로 구현
+
+OSD : Rurek 덕분에 MIS 코드 구현
+         Rurek와 mis_b 덕분에, OSD 코드의 최적화 직렬 쓰기는 전환 가능한 인터럽트에 의해 구동됩니다.
+         데이터 전송 지연 최소화
+
+
+PULL-UPS에 대한 특별 참고 사항 :
+- 이제 기본적으로 활성화됩니다.
+- 5V를 지원하지 않는 I2C 장치를 사용하는 경우 경고.
+
+- WMP 만 사용하는 경우 : WMP를 부드럽게 활성화합니다.
+- WMP + NK를 사용하는 경우 : 소프트에서 사용 가능
+- WMP + BMP020 (LLC 덕분에 5V 친화적 인 제품)을 사용하는 경우 : 소프트
+- WMP + (LLC + I2C 장치)를 사용하는 경우 : 소프트에서 활성화하십시오
+- WMP + 직접 I2C 버스 연결을 사용하는 경우 I2C 장치 (5V가 아님) : 소프트에서 비활성화하고 외부 장치를 사용하십시오
+풀업 3.3V. 대부분의 브레이크 아웃 보드는 이미 사용할 수있는 풀업 기능이 내장되어 있습니다.
+
+1.6 1.5와의 차이 목록
+
+  - #define 구성의 MIDRC : 특정 TX에 대해 다른 스틱 중심 위치를 선택할 수 있습니다.
+
+  - Jussi가 설계 한 무료 비행 IMU (특정 rcgroups 주제 참조). 전면 방향 = Y 화살표
+- Gyro ITG3200 통합 :이 버전은 sparkfun 브레이크 아웃 ITG3200 보드의 다른 I2C 주소를 사용합니다
+일단 #define 라인이 주석 처리되지 않으면 ITG3200은 WMP를 대체합니다. 필요한 경우 단일 센서로 사용할 수 있습니다.
+Acc BMP180 : Opie 코드 덕분에 FFIMU와 일치하도록 방향을 변경했습니다.
+그것은 잘 작동하고 모드 선택으로 활성화됩니다.
+ - 자력계 HMC5843 : 순간적으로 GUI에서만 시각화 목적으로 통합되었습니다. 기울기가 25도 미만인 경우에만 작동합니다.
+- Baro BMP085 : 셀로 작동하며 모드 선택으로 활성화됩니다.
+순간적으로 잘 이행되지 않아 큰 도약. 이를 비활성화 시키려면 #define 행을 주석 처리 할 수 ??있습니다
+
+  - pullups는 기본적으로 비활성화되어 있습니다. #define INTERNAL_I2C_PULLUPS가 활성화되어 있습니다.
+풀업의 활성화는 LLC없이 FFIMU 직접 연결에 필수적입니다.
+
+  - 다음 ACC의 지원 : BMA180, BMA020, ADXL345. mgros, opie11 및 Point65의 기여로 인해
+
+  - GUI : 센서의 존재를 나타내는 새로운 버튼.
+
+  - 버그 수정 (보 감사) : 어떤 경우에는 WMP + 부속 기관 ACC,
+    WMP 데이터는 NK 데이터 요 점프 보정 수정으로 해석되었습니다 (적은)
+
+
+- 이전 방법을 제거하여 모터를 초기화하고 보정하십시오. 더 이상 스로틀 두려움이 없습니다.
+
+  - 수정 됨 : HEX6 및 Y6의 PIN5 및 6 스위치 버그
+
+  - Arduino MEGA 통합
+    마리아노 (Mariano)가 시작한 작업 덕분에,
+    Arduino MEGA 보드 (모든 설정 및 옵션)와 완벽하게 호환되도록 작업을 완료했습니다.
+    Seeeduino와 같은 MEGA 보드의 경우,
+      약간의 설정을 프로 미니와 함께하는 것은 불가능합니다 : Y6 + 표준 수신기 + 틸트 서보
+
+    그것은 #define으로 전환하는 것입니다.
+    #define PROMINI 또는 #define MEGA // Arduino 형식
+
+    RC 및 모터의 PIN 할당은 Aeroquad shield mega 2.x와 호환됩니다.
+
+    Jussi는 MEGA 보드의 PIN 번호가 정확하지는 않지만 PIN 매핑이 다른 방패를 준비 중입니다.
+
+    PPM_SUM 19 (RC_THROTTLE 할당과 분리됨)
+    RC_THROTTLE 62 (= A8)
+    RC_ROLL 63 (= A9)
+    RC_PITCH (64) (= A10)
+    RC_YAW 65 (= A11)
+    RC_MODE 66 (= A12)
+    RC_AUX (사용되지 않음) 67 (= A13)
+    RC_7 (사용되지 않음) 68 (= A14)
+    RC_8 (사용되지 않음) 69 (= A15)
+    I2C SDA 20
+    I2C SCL 21
+    FRONTMOTORPIN 2 (328p에서 3) = tricopter 용 서보
+    REARMOTORPIN 3 (328p에서 9)
+    RIGHTMOTORPIN 5 (328p에서 10)
+    LEFTMOTORPIN 6 (328p에서 11)
+    Y6RIGHT (HEXFRONT) 7 (328p에서 6)
+    Y6LEFT (HEXREAR) 8 (328p에서 5)
+    V_BAT_MONITOR A3
+    기울임 및 짐바브웨 & 윙 A0 / A1
+    파워 핀 12
+
+
+- Mariano가 안정 모드 (음수에서 sqrt)로 볼 수있는 버그가 수정되었습니다.
+
+  - TILT ROLL & PITCH가 TRICOPTER 구성과 호환됩니다.
+
+  - 안티 자이로 글리치 (anti gyro glitch) :보다 안정적인 것으로 여겨지는 2 가지 읽기 사이의 제한을 도입했습니다. Point65의 정보.
+
+  - RC 비율은 5로 확장 될 수 있습니다.이 옵션을 사용하면 아주 곡예적인 설정을 위해 피치 / 롤 스틱에 대해보다 선형적인 응답을보아야합니다.
+
+  - quadris에 우리는 yaw가 갑자기 멈추었을 때 약간의 점프를 볼 수 있습니다.
+    정지 기능을 부드럽게하는 기능이 추가되었습니다.
+    만약 당신이 그것을 좋아하지 않는다면 axisPID [YAW] = constrain (axisPID [YAW], - 100-abs (rcCommand [YAW]), + 100 + abs (rcCommand [YAW]);
+
+  - 스케치 : 고급 사용자 설정을 추가했는데 일부 튜닝 가능성에 대한 설명이 추가되었습니다.
+
+  - ACC가있는 경우 (Nunchuk 또는 다른 I2C), 적절한 ACC 교정을 수동으로 수행 할 때까지 모터를 가동 할 수 없습니다.
+    보정이 완료되지 않았거나 멀티가 너무 많이 기울어 진 경우 상태 LED가 매 1 초마다 천천히 깜박입니다.
+
+
+1.5 1.4와의 차이 목록
+
+#define MOTOR_STOP
+이것은 스로틀 명령이 낮은 위치에있을 때 모터를 즉시 정지시키는 다른 방법입니다
+HEX6 추가됨
+모터 핀 :
+// REAR_R => PIN 9
+// FRONT_R => PIN 10
+// REAR_L => PIN 11
+// FRONT_L => PIN 3
+// FRONT => PIN 6
+// REAR => PIN 5
+
+안티 자이로 글리치 : 하드 리셋 후 데이터를 중화하는 시간이 증가합니다. 자이로 결함의 영향이 크게 줄어 듭니다. 심지어 5 초마다 하드 리셋을하는 나쁜 WMP 복사본으로 안전하게 비행 할 수 있습니다.
+
+스로틀 속도 억제 PID 곡선 : 하나의 관련 값으로 대체. PID는 [1500-2000] 스로틀 위치 사이에서 비례하여 감소 할 수 있습니다 (빠른 변환에서 떨림을 방지하는 데 도움이 됨).
+
+내부 소프트 단순화 : EEPROM, 직렬 통신, 모터 네이밍.
+
+안정된 모드가 크게 향상됩니다.
+
+ADXL345 I2C acc 지원 이점 : 루프 시간 WMP + ADXL345가 감소되어 WMP만의 conf와 비교하여 더 나은 안정성을 제공합니다. 분명히, ADXL345는 NK 설정과 함께 연결되면 안됩니다. BMA020 I2C acc의 통합은 코드 프레임이 준비되기 때문에 쉽습니다.
+
+NK가 감지되면 LED 깜박임은 init 단계 => 이후에 nunchuk의 올바른 감지를 시각화하는 방법입니다.
+
+BMP085 I2C 기압계 지원. 그러나 시각화 목적으로 만 사용됩니다. 고도 안정화를 위해 아직 활성화 할 수 없습니다.
+
+알려진 문제 : 아크 모드의 트림은 안정 모드의 트림과 다릅니다.
+
+
+Note:
+if you use a NK or a ADXL345 acc. You must do a manual calibration to see good results in gui
+- stable mode with NK should indicate 0 / 0 / 200 acc values
+- stable mode with ADXL345 should indicate 0 / 0 / 250 acc values
+- If you have a constant +/- 400 values on the graph, the calibration is not done.
+for the WMP+ADXL345 setup: (+/-BMP085 for curious)
+- D12 +1 diode is used to poser the WMP
+- a 3.3V is used to power the ADXL345 (stabilized alim or multiple LED from a 5V source)
+to reset parameters to default: just upload an old version and the new again.
+this version is compatible with everything designed before (WMP only conf or WMP+NK)
+
+
+
+노트 :
+NK 또는 ADXL345 acc. gui에서 좋은 결과를 보려면 수동 보정을 수행해야합니다.
+- NK가있는 안정 모드는 0 / 0 / 200 acc 값을 나타내야합니다.
+- ADXL345가있는 안정 모드는 0 / 0 / 250 acc 값을 나타내야합니다.
+- 그래프에 +/- 400의 값이 있으면 보정이 수행되지 않습니다.
+WMP + ADXL345 설정 : (호기심에 +/- BMP085)
+- D12 +1 다이오드는 WMP를 위장시키는 데 사용됩니다.
+- 3.3V는 ADXL345에 전원을 공급하는 데 사용됩니다 (5V 소스에서 안정화 된 Alim 또는 다중 LED)
+매개 변수를 기본값으로 재설정하려면 이전 버전과 새 버전을 다시 업로드하십시오.
+이 버전은 이전에 설계된 모든 기능과 호환됩니다 (WMP 전용 conf 또는 WMP + NK)
+
+
+
+
+1.4:
+
+직렬 PPM :
+// # SERIAL_SUM_PPM 정의에 대한 자세한 설명
+주석을 달거나 주석 처리를 제거하는 한 줄만 활성화하십시오.
+채널 수에 관한 버그가 수정되었습니다.
+
+Y6의 통합
+작업 테스트 버전의 코드가 병합되었습니다.
+
+피치 / 롤 서보 안정화 통합 (QUAD + 및 QUADX 설정과 만 호환)
+SERVO_TILT_PITCH_PIN : A0
+SERVO_TILT_ROLL_PIN : A1
+- 각 서보의 경우 스케치에서 직접 다른 매개 변수를 설정할 수 있습니다 (GUI 간섭 없음)
+TILT_PITCH_MIN 1020 // 서보 이동 최소, 1020 미만으로 설정하지 마십시오.
+TILT_PITCH_MAX 2000 // 서보 이동 최대, 최대 값 = 2000
+TILT_PITCH_MIDDLE 1500 // 서보 중립 값
+TILT_PITCH_PROP 10 // 서보 비례 (각도에 묶임); 움직임을 거꾸로하기 위해 음수 일 수있다.
+
+GIMBAL 구성 통합 : 피치 / 롤 각도 + 입력 스틱 서보 안정화 믹스
+이것은 이전과 동일하지만 순수 짐벌 시스템 (ESC 없음)입니다.
+입력 RC 스틱 위치가 각도 계산과 혼합됩니다.
+
+이해하기 힘든 축 속도 PID 곡선의 억제. 2 개의보다 다양한 상자로 대체 :
+- ROLL / PITCH RATE : ROLL & PITCH 축의 회전 속도를 증가시킵니다.
+- YAW RATE : ROLL & PITCH 축의 회전 속도를 증가시킵니다.
+0 = 기본 소프트 속도; 0.7 = acro rate; 1 = 미친 속도 (1 설정에주의하십시오, 매우 폭력적입니다)
+
+각 보정 후에 더 이상 깜박이는 LED
+
+새로운 교정 접근법
+각 초기화시 :
+자이로 보정이 완료되었습니다.
+순수한 짐벌 셋업에 대해서만 acc 캘리브레이션이 수행됩니다
+다른 설정의 경우, acc는 EEPROM에서 검색됩니다
+온 디맨드 (전체 왼쪽 요 스틱 + 풀 피치 로우 스틱 사용) :
+자이로 보정이 완료되었습니다.
+acc 보정이 완료되고 EERPOM에 저장됩니다.
+=> acc 교정은 적어도 한번은 요구에 따라 이루어져야합니다.
+
+메모리 공간을 절약하기 위해 #define을 추가하여 LCD 코드를 보완한다.
+자동 레벨 강도 : 마지막 범위는 [0; 10]입니다. 새로운 범위는 [0; 25]이며, 튜닝에 대한 2.5>>보다 정밀도가 낮습니다.
+
+
+1.2 :
+나는 코드 크기의 최적화를 조금 더 추진했는데, 이제 겨우 14k입니다.
+원하는 결과에 영향을주지 않고 LCD 코드를 줄이기위한 많은 작업.
+이제 Arduino에는 TriiWii 코드 2 개를 실행할 수있는 충분한 공간이 있습니다.
+주로 내부 Arduino 카드와 내부 메모리가 160p 밖에 안되는 카드에 유용합니다 (이 카드는 이베이에서 가격이 저렴합니다)
+매개 변수의 범위는 GUI에서 확장됩니다.
+- 2 개의 서보가있는 BI 헬리콥터 모드가 도입되었지만 실제 모델에서는 아직 테스트되지 않았습니다. GUI에서 반응 만 테스트했습니다.
+
+1.1 :
+많은 코드 변경 :
+중요한 부분 (PID 루프)의 대부분의 float 연산은 int 연산으로 대체됩니다.
+GUI와 arduino 간의 프로토콜이 단순화되었습니다.
+LCD 코드가 다시 작성되었습니다.
+EEPROM 코드 재 작성
+새로운 기능은 없으며 최적화가 더 많습니다.
+그러나 코드 속도가 빨라지고 훨씬 더 작아집니다 (19k -> 15k)
+
+1.0:
+이것은 스레드에서 이미 개발 된 것을 통합하는 것을 첫 번째 목표로하는 새로운 버전입니다.
+TriWii에서 MultiWii로 이름을 바꿉니다. 이제 QUAD 헬리콥터도 부드럽게 설계되었습니다.
+몇 가지 실제 개선 및 변경 사항이 있습니다.
+스케치 : TRI, QUAD + 및 QUADX 지원
+스케치 : 디지털 핀 2의 PPM SUM 입력 신호 지원
+Arduino : PIN 재 매핑! (이전 게시물 및 기본 사이트 참조). 이전 TriWii에서 업그레이드하기 전에 솔더링에 대해 생각해보십시오.
+GUI : 더 나은 PITCH / ROLL 표현 및 모델 경사 표현
+GUI : TRI, QUAD + 및 QUADX 지원, 자동 인식
+GUI : 기본적으로 활성화 된 ACC 그래프
+사이트 : 부분적으로 업데이트되었지만 주요 부분은 정상입니다.
+안정화 WMP 및 NK + WMP는 이전 버전과 다르지 않습니다.
